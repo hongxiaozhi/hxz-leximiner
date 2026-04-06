@@ -1,0 +1,9 @@
+# Sample academic vocabulary list
+academic
+analyze
+approach
+concept
+data
+method
+research
+theory

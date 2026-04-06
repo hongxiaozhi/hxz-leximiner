@@ -1,0 +1,15 @@
+# Sample CET4 vocabulary list
+analyze
+article
+common
+english
+help
+important
+learn
+material
+read
+student
+system
+text
+word
+write

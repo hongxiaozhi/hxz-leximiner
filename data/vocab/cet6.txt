@@ -1,0 +1,7 @@
+# Sample CET6 vocabulary list
+extract
+outcome
+phrase
+research
+statistic
+vocabulary

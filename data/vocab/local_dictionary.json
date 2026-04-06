@@ -1,0 +1,152 @@
+{
+  "academic": {
+    "chinese_meaning": "学术的；学院的",
+    "phonetic": "/ˌækəˈdemɪk/",
+    "mnemonic": "aca 联想 academy，表示学校；-ic 常见形容词后缀"
+  },
+  "ability": {
+    "chinese_meaning": "能力；才能",
+    "phonetic": "/əˈbɪləti/",
+    "mnemonic": "able 表示能够，-ity 构成名词，可记成有能力的状态"
+  },
+  "analysis": {
+    "chinese_meaning": "分析",
+    "phonetic": "/əˈnæləsɪs/",
+    "mnemonic": "ana 可联想拆开看，lysis 表示分解，可记成拆开分析"
+  },
+  "analyze": {
+    "chinese_meaning": "分析",
+    "phonetic": "/ˈænəlaɪz/",
+    "mnemonic": "analyze 和 analysis 同源，可联想为做分析这个动作"
+  },
+  "article": {
+    "chinese_meaning": "文章；物品；冠词",
+    "phonetic": "/ˈɑːrtɪk(ə)l/",
+    "mnemonic": "arti 可联想 art，文章是写作作品；-cle 为词尾"
+  },
+  "common": {
+    "chinese_meaning": "常见的；共同的",
+    "phonetic": "/ˈkɑːmən/",
+    "mnemonic": "com 表示共同，common 可记成大家都常见的"
+  },
+  "concept": {
+    "chinese_meaning": "概念；观念",
+    "phonetic": "/ˈkɑːnsept/",
+    "mnemonic": "con 表示一起，cept 可联想 capture，抓住一个概念"
+  },
+  "data": {
+    "chinese_meaning": "数据；资料",
+    "phonetic": "/ˈdeɪtə/",
+    "mnemonic": "读音接近 day-ta，可结合“每天都看数据”记忆"
+  },
+  "english": {
+    "chinese_meaning": "英语；英国的",
+    "phonetic": "/ˈɪŋɡlɪʃ/",
+    "mnemonic": "eng- 可联想 England，English 即英语/英国的"
+  },
+  "extract": {
+    "chinese_meaning": "提取；摘录",
+    "phonetic": "/ˈɛkstrækt/",
+    "mnemonic": "ex 表示 out，tract 表示拉，可记成把内容拉出来"
+  },
+  "frequency": {
+    "chinese_meaning": "频率；频次",
+    "phonetic": "/ˈfriːkwənsi/",
+    "mnemonic": "frequent 表示频繁，-cy 构成名词，可记成频繁出现的次数"
+  },
+  "important": {
+    "chinese_meaning": "重要的",
+    "phonetic": "/ɪmˈpɔːrt(ə)nt/",
+    "mnemonic": "im- 加强语气，port 可联想 carry，重要的是值得带着走的"
+  },
+  "improve": {
+    "chinese_meaning": "提升；改进",
+    "phonetic": "/ɪmˈpruːv/",
+    "mnemonic": "prove 有证明意味，improve 可记成变得更好"
+  },
+  "learn": {
+    "chinese_meaning": "学习；得知",
+    "phonetic": "/lɜːrn/",
+    "mnemonic": "learn 读音短促，可结合反复朗读记忆学习动作"
+  },
+  "material": {
+    "chinese_meaning": "材料；资料；物质",
+    "phonetic": "/məˈtɪriəl/",
+    "mnemonic": "mater 可联想 matter，材料就是构成事物的内容"
+  },
+  "method": {
+    "chinese_meaning": "方法",
+    "phonetic": "/ˈmɛθəd/",
+    "mnemonic": "me-thod 可分节记忆，表示解决问题的方法"
+  },
+  "outcome": {
+    "chinese_meaning": "结果；成果",
+    "phonetic": "/ˈaʊtkʌm/",
+    "mnemonic": "out 表示出来，come 表示到来，可记成最终出现的结果"
+  },
+  "phrase": {
+    "chinese_meaning": "短语；词组",
+    "phonetic": "/freɪz/",
+    "mnemonic": "发音接近 frayz，可结合固定搭配来记"
+  },
+  "read": {
+    "chinese_meaning": "阅读；读",
+    "phonetic": "/riːd/",
+    "mnemonic": "read 是基础词，可结合大声朗读记忆"
+  },
+  "reading": {
+    "chinese_meaning": "阅读",
+    "phonetic": "/ˈriːdɪŋ/",
+    "mnemonic": "read 加 -ing，表示阅读这个过程"
+  },
+  "research": {
+    "chinese_meaning": "研究；调查",
+    "phonetic": "/rɪˈsɜːrtʃ/",
+    "mnemonic": "re 表示反复，search 表示寻找，可记成反复查找研究"
+  },
+  "skill": {
+    "chinese_meaning": "技能；技巧",
+    "phonetic": "/skɪl/",
+    "mnemonic": "skill 发音短促，可结合“熟练技巧”整体记忆"
+  },
+  "student": {
+    "chinese_meaning": "学生",
+    "phonetic": "/ˈstuːd(ə)nt/",
+    "mnemonic": "stud 可联想 study，student 即学习的人"
+  },
+  "system": {
+    "chinese_meaning": "系统；体系",
+    "phonetic": "/ˈsɪstəm/",
+    "mnemonic": "sys- 可联想组织结构，system 即一整套系统"
+  },
+  "text": {
+    "chinese_meaning": "文本；课文",
+    "phonetic": "/tɛkst/",
+    "mnemonic": "text 常见于 textbook，可联想课本文本"
+  },
+  "theory": {
+    "chinese_meaning": "理论；学说",
+    "phonetic": "/ˈθiːəri/",
+    "mnemonic": "theo 可联想思考，theory 是思考形成的理论"
+  },
+  "vocabulary": {
+    "chinese_meaning": "词汇；词汇量",
+    "phonetic": "/vəˈkæbjəleri/",
+    "mnemonic": "voca 可联想 vocal，和词语发声相关"
+  },
+  "word": {
+    "chinese_meaning": "单词；词语",
+    "phonetic": "/wɜːrd/",
+    "mnemonic": "基础高频词，可结合 spell a word 记忆"
+  },
+  "write": {
+    "chinese_meaning": "写；写作",
+    "phonetic": "/raɪt/",
+    "mnemonic": "write 与 right 同音，可通过写字动作反复记忆"
+  },
+  "writing": {
+    "chinese_meaning": "写作",
+    "phonetic": "/ˈraɪtɪŋ/",
+    "mnemonic": "write 加 -ing，表示写作过程"
+  }
+}

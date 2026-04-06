@@ -1,0 +1,5 @@
+# Sample phrase dictionary
+academic reading
+common phrase
+learning outcome
+reading material

@@ -1,0 +1,27 @@
+{
+  "academic": {
+    "chinese_meaning": "学术的",
+    "phonetic": "/ˌækəˈdemɪk/",
+    "mnemonic": "aca 可联想 academy，-ic 常见形容词后缀，表示学术相关"
+  },
+  "research": {
+    "chinese_meaning": "研究",
+    "phonetic": "/rɪˈsɜːrtʃ/",
+    "mnemonic": "re 表示再次，search 表示寻找，可记成反复寻找资料"
+  },
+  "improve": {
+    "chinese_meaning": "提升，改进",
+    "phonetic": "/ɪmˈpruːv/",
+    "mnemonic": "improve 可联想 in + prove，证明自己变得更好"
+  },
+  "reading": {
+    "chinese_meaning": "阅读",
+    "phonetic": "/ˈriːdɪŋ/",
+    "mnemonic": "read 是读，-ing 表示进行中的动作过程"
+  },
+  "writing": {
+    "chinese_meaning": "写作",
+    "phonetic": "/ˈraɪtɪŋ/",
+    "mnemonic": "write 是写，-ing 表示动作过程，可记成写作行为"
+  }
+}
