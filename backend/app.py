@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import asdict
 from functools import lru_cache
 from pathlib import Path
 
@@ -104,7 +105,7 @@ def create_app() -> Flask:
             return {
                 "status": "ok",
                 "message": "analysis completed",
-                "summary": result.summary.__dict__,
+                "summary": asdict(result.summary),
                 "words": word_rows,
                 "phrases": phrase_rows,
                 "word_count": len(word_df),
