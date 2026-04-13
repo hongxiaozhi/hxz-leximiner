@@ -2,6 +2,38 @@ const API_BASE = window.location.protocol === "file:"
   ? "http://127.0.0.1:5000"
   : window.location.origin;
 
+async function loadVocabPreview() {
+  const grid = document.getElementById("vocab-stats-grid");
+  const note = document.getElementById("vocab-stats-note");
+  if (!grid || !note) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/leximiner/vocab-preview`);
+    const data = await response.json();
+    const stats = data.stats || {};
+    const cards = [
+      ["高频/基础", stats.high_school || 0],
+      ["四级", stats.cet4 || 0],
+      ["六级", stats.cet6 || 0],
+      ["雅思", stats.ielts || 0],
+      ["托福", stats.toefl || 0],
+      ["学术词表", stats.academic || 0],
+    ];
+    grid.innerHTML = cards.map(([label, value]) => `
+      <article class="stat-card">
+        <span>${label}</span>
+        <strong>${value}</strong>
+      </article>
+    `).join("");
+    note.textContent = `短语词表 ${data.phrase_count || 0} 条，短语释义 ${data.phrase_meaning_count || 0} 条。`;
+  } catch (error) {
+    grid.innerHTML = "";
+    note.textContent = `词库概览加载失败：${error.message}`;
+  }
+}
+
 function renderTable(container, rows, columns) {
   if (!rows.length) {
     container.innerHTML = '<p class="empty">暂无结果</p>';
@@ -91,3 +123,6 @@ async function analyze() {
 }
 
 document.getElementById("analyze-btn").addEventListener("click", analyze);
+document.getElementById("refresh-vocab-btn").addEventListener("click", loadVocabPreview);
+
+loadVocabPreview();

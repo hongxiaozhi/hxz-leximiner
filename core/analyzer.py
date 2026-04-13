@@ -20,6 +20,8 @@ class LexiMinerAnalyzer:
         self.word_metadata_service = WordMetadataService(vocab_dir=self.vocab_dir)
 
     def analyze_text(self, text: str, use_online_translation: bool = False) -> AnalysisResult:
+        # The pipeline is intentionally linear: preprocess -> word analysis ->
+        # enrichment -> phrase analysis -> summary assembly.
         cleaned_text = clean_text(text)
         sentences = split_sentences(cleaned_text)
         word_results = self.word_extractor.build_word_results(cleaned_text, sentences)

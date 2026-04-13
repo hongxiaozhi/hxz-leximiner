@@ -26,6 +26,8 @@ class WordExtractor:
     """Extract clean English words, lemmas, and frequencies."""
 
     def __init__(self, extra_stopwords: Iterable[str] | None = None) -> None:
+        # Use NLTK data when available, otherwise fall back to built-in lists
+        # so the project can still run in a minimal local environment.
         ensure_nltk_resources()
         self.lemmatizer = Lemmatizer()
         if has_nltk_resource("corpora/stopwords"):
@@ -49,6 +51,8 @@ class WordExtractor:
         return filtered
 
     def extract_word_details(self, text: str, sentences: Sequence[str]) -> Dict[str, Dict[str, str | int]]:
+        # Keep a single representative word for each lemma so the UI can show
+        # one row per normalized term instead of repeating inflected forms.
         tokens = self.filter_tokens(self.tokenize(text), remove_stopwords=False)
         lemmas = self.lemmatizer.lemmatize_tokens(tokens)
         lemma_counter = Counter(lemmas)

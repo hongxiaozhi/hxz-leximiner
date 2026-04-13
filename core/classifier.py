@@ -8,13 +8,14 @@ from typing import Dict, Iterable, Set
 class VocabularyClassifier:
     """Classify words and phrases with local vocabulary lists."""
 
-    WORD_PRIORITY = ("academic", "ielts", "cet6", "cet4", "high_school")
+    WORD_PRIORITY = ("academic", "toefl", "ielts", "cet6", "cet4", "high_school")
     LEVEL_ORDER = {
         "high_school": 1,
         "cet4": 2,
         "cet6": 3,
         "ielts": 4,
-        "academic": 5,
+        "toefl": 5,
+        "academic": 6,
     }
 
     def __init__(self, vocab_dir: Path) -> None:
@@ -53,6 +54,7 @@ class VocabularyClassifier:
     def _load_vocabularies(self) -> Dict[str, Set[str]]:
         return {
             "academic": self._load_word_list(self.vocab_dir / "academic.txt"),
+            "toefl": self._load_word_list(self.vocab_dir / "toefl.txt"),
             "ielts": self._load_word_list(self.vocab_dir / "ielts.txt"),
             "cet6": self._load_word_list(self.vocab_dir / "cet6.txt"),
             "cet4": self._load_word_list(self.vocab_dir / "cet4.txt"),
@@ -66,7 +68,7 @@ class VocabularyClassifier:
             return "cet4"
         if len(lemma) <= 8:
             return "cet6"
-        return "ielts"
+        return "toefl"
 
     def _load_word_list(self, file_path: Path) -> Set[str]:
         if not file_path.exists():

@@ -28,7 +28,12 @@ def load_text_from_upload(uploaded_file) -> str:
     original_name = getattr(uploaded_file, "filename", "") or getattr(uploaded_file, "name", "")
     suffix = Path(original_name).suffix.lower()
     mimetype = getattr(uploaded_file, "mimetype", "") or ""
-    file_bytes = uploaded_file.getvalue()
+    file_bytes = uploaded_file.read()
+    if hasattr(uploaded_file, "seek"):
+        try:
+            uploaded_file.seek(0)
+        except Exception:
+            pass
 
     if suffix == ".txt" or mimetype.startswith("text/"):
         return file_bytes.decode("utf-8", errors="ignore")

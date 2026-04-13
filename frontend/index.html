@@ -11,7 +11,19 @@
     <section class="hero">
       <p class="eyebrow">LexiMiner</p>
       <h1>英语词汇与短语分析</h1>
-      <p class="lead">输入英文文本，快速得到词汇统计、短语提取和分类结果。当前页面已切换到新的前后端结构。</p>
+      <p class="lead">输入英文文本，快速得到词汇统计、短语提取、词库分层和释义补全结果。现在已经接入你放进参考目录的词库资源。</p>
+    </section>
+
+    <section class="stats-strip card" id="vocab-stats">
+      <div class="stats-header">
+        <div>
+          <p class="eyebrow">Vocabulary</p>
+          <h2>词库概览</h2>
+        </div>
+        <button id="refresh-vocab-btn" class="ghost">刷新词库概览</button>
+      </div>
+      <div id="vocab-stats-grid" class="stats-grid"></div>
+      <p id="vocab-stats-note" class="muted">正在读取词库数据...</p>
     </section>
 
     <section class="panel">
@@ -55,7 +67,7 @@
 
     <section class="card">
       <h2>导入说明</h2>
-      <p>支持直接粘贴英文文本，也支持上传 TXT 或 PDF 文件。上传文件后会优先读取文件内容。</p>
+      <p>支持直接粘贴英文文本，也支持上传 TXT 或 PDF 文件。词库已合并为本地分层结构，网页上会显示基础词表、考试词表和释义底座的统计结果。</p>
     </section>
   </main>
 

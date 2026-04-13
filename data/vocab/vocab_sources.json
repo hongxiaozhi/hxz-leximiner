@@ -1,0 +1,62 @@
+{
+  "priority": [
+    "google-10000-english",
+    "FrequencyWords",
+    "skywind3000/ECDICT",
+    "KyleBing/english-vocabulary",
+    "kajweb/dict",
+    "mahavivo/english-wordlists",
+    "fanhongtao/IELTS",
+    "mastani.net IELTS/TOEFL/CAE"
+  ],
+  "groups": {
+    "core_frequency": {
+      "description": "基础高频词，用于词频分层和低门槛覆盖",
+      "sources": [
+        "google-10000-english",
+        "FrequencyWords"
+      ]
+    },
+    "dictionary_base": {
+      "description": "释义和例句底座，用于补全中文释义、音标、助记",
+      "sources": [
+        "skywind3000/ECDICT"
+      ]
+    },
+    "cet4": {
+      "description": "四级词库",
+      "sources": [
+        "KyleBing/english-vocabulary",
+        "kajweb/dict"
+      ]
+    },
+    "cet6": {
+      "description": "六级词库",
+      "sources": [
+        "KyleBing/english-vocabulary",
+        "kajweb/dict"
+      ]
+    },
+    "ielts": {
+      "description": "雅思词库",
+      "sources": [
+        "kajweb/dict",
+        "fanhongtao/IELTS",
+        "mastani.net IELTS/TOEFL/CAE"
+      ]
+    },
+    "toefl": {
+      "description": "托福词库",
+      "sources": [
+        "kajweb/dict",
+        "mastani.net IELTS/TOEFL/CAE"
+      ]
+    },
+    "supplemental": {
+      "description": "补充词表，作为覆盖层和扩展层",
+      "sources": [
+        "mahavivo/english-wordlists"
+      ]
+    }
+  }
+}

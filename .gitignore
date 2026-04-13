@@ -1,0 +1,10 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Reference vocabulary archives
+data/参考词库/
+
+# Generated and local test artifacts
+tests/*.pdf
+data/vocab/generated/

@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 import json
+import importlib
 import re
 from pathlib import Path
 
-import eng_to_ipa as ipa
-
+ipa = None
 try:
-    from deep_translator import GoogleTranslator
+    ipa = importlib.import_module("eng_to_ipa")
 except ModuleNotFoundError:
-    GoogleTranslator = None
+    pass
+
+GoogleTranslator = None
+try:
+    GoogleTranslator = importlib.import_module("deep_translator").GoogleTranslator
+except ModuleNotFoundError:
+    pass
 
 
 class WordMetadataService:
@@ -54,6 +60,8 @@ class WordMetadataService:
             item.mnemonic = metadata.mnemonic
 
     def get_metadata(self, lemma: str, use_online_translation: bool = False):
+        # Prefer local dictionaries first; only fall back to generated hints
+        # when the project vocabulary does not already know this lemma.
         normalized = lemma.lower().strip()
         if normalized in self.local_dictionary:
             return self._pack_metadata(normalized, self.local_dictionary[normalized])
@@ -84,12 +92,13 @@ class WordMetadataService:
         return f"{word}（建议后续补充本地词典释义）"
 
     def _build_phonetic(self, word: str) -> str:
-        try:
-            phonetic = ipa.convert(word).strip()
-            if phonetic and phonetic != word:
-                return f"/{phonetic}/"
-        except Exception:
-            pass
+        if ipa is not None:
+            try:
+                phonetic = ipa.convert(word).strip()
+                if phonetic and phonetic != word:
+                    return f"/{phonetic}/"
+            except Exception:
+                pass
         return f"/{word}/"
 
     def _build_mnemonic(self, word: str) -> str:
