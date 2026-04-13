@@ -61,15 +61,6 @@ function renderSummary(summary) {
   `;
 }
 
-function renderStatusMessage(message) {
-  return `
-    <div class="status-line">
-      <span class="status-dot"></span>
-      <strong>${escapeHtml(message || "等待分析")}</strong>
-    </div>
-  `;
-}
-
 function renderCards(container, rows, type) {
   if (!rows.length) {
     container.innerHTML = '<p class="empty">暂无结果</p>';
@@ -124,17 +115,14 @@ async function analyze() {
   const fileInput = document.getElementById("file-input");
   const uploadedFile = fileInput.files[0];
   const useOnlineTranslation = document.getElementById("online-translation").checked;
-  const statusBox = document.getElementById("status-box");
   const summaryBox = document.getElementById("summary-box");
   const wordsBox = document.getElementById("words-box");
   const phrasesBox = document.getElementById("phrases-box");
 
   if (!text && !uploadedFile) {
-    statusBox.textContent = "请输入英文文本或上传文件";
+    summaryBox.innerHTML = '<p class="empty">请输入英文文本或上传文件</p>';
     return;
   }
-
-  statusBox.textContent = "分析中...";
 
   try {
     const isFileUpload = Boolean(uploadedFile);
@@ -168,12 +156,11 @@ async function analyze() {
       throw new Error(data.message || "请求失败");
     }
 
-    statusBox.innerHTML = renderStatusMessage(data.message);
     summaryBox.innerHTML = renderSummary(data.summary);
     renderCards(wordsBox, data.words || [], "word");
     renderCards(phrasesBox, data.phrases || [], "phrase");
   } catch (error) {
-    statusBox.innerHTML = renderStatusMessage(`分析失败：${error.message}`);
+    summaryBox.innerHTML = `<p class="empty">分析失败：${escapeHtml(error.message)}</p>`;
   }
 }
 

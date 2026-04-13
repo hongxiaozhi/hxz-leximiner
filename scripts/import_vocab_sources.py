@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Import reference vocabulary archives into LexiMiner's vocab layer."""
+"""Import reference vocabulary archives into LexiMiner local vocab files."""
 
 import csv
 import io
@@ -8,6 +8,7 @@ import json
 import re
 from collections import OrderedDict, defaultdict
 from pathlib import Path
+from typing import Any
 from zipfile import ZipFile
 
 
@@ -17,137 +18,171 @@ VOCAB_DIR = PROJECT_ROOT / "data" / "vocab"
 GENERATED_DIR = VOCAB_DIR / "generated"
 
 WORD_PATTERN = re.compile(r"^[A-Za-z][A-Za-z'-]*$")
-WORD_FIELD_NAMES = {"word", "words", "lemma", "term", "entry", "vocabulary"}
 
 
 def normalize_word(word: str) -> str:
     return word.strip().lower()
 
 
-def add_words(target: OrderedDict[str, None], words: list[str]) -> None:
-    for word in words:
-        normalized = normalize_word(word)
-        if normalized and WORD_PATTERN.match(normalized):
-            target.setdefault(normalized, None)
+def safe_text(value: Any) -> str:
+    return str(value or "").strip()
 
 
-def words_from_text(text: str) -> list[str]:
-    words: list[str] = []
+def load_json(path: Path) -> dict[str, dict[str, str]]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+
+    cleaned: dict[str, dict[str, str]] = {}
+    for key, value in data.items():
+        if not str(key).strip() or not isinstance(value, dict):
+            continue
+        cleaned[str(key).strip().lower()] = {
+            "chinese_meaning": safe_text(value.get("chinese_meaning")),
+            "phonetic": safe_text(value.get("phonetic")),
+            "mnemonic": safe_text(value.get("mnemonic")),
+        }
+    return cleaned
+
+
+def save_json(path: Path, data: dict[str, dict[str, str]]) -> None:
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def add_word(target: OrderedDict[str, None], word: str) -> None:
+    normalized = normalize_word(word)
+    if normalized and WORD_PATTERN.match(normalized):
+        target.setdefault(normalized, None)
+
+
+def parse_word_text(text: str) -> list[str]:
+    entries: list[str] = []
     for line in text.splitlines():
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        parts = re.split(r"[\s,;|/\t]+", line)
-        for part in parts:
-            part = part.strip()
+        for part in re.split(r"[\s,;|/\t]+", line):
             if WORD_PATTERN.match(part):
-                words.append(part)
-    return words
+                entries.append(part)
+    return entries
 
 
-def words_from_json(text: str) -> list[str]:
-    data = json.loads(text)
-    words: list[str] = []
-    if isinstance(data, list):
-        for item in data:
-            if isinstance(item, str):
-                words.extend(words_from_text(item))
-            elif isinstance(item, dict):
-                for value in item.values():
-                    if isinstance(value, str):
-                        words.extend(words_from_text(value))
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(key, str):
-                words.extend(words_from_text(key))
-            if isinstance(value, str):
-                words.extend(words_from_text(value))
-            elif isinstance(value, list):
-                for item in value:
+def extract_word_list_entries(archive: ZipFile) -> list[str]:
+    entries: list[str] = []
+    for entry in archive.infolist():
+        if entry.is_dir():
+            continue
+        name = entry.filename.lower()
+        with archive.open(entry) as raw:
+            data = raw.read()
+
+        if name.endswith(".zip"):
+            with ZipFile(io.BytesIO(data)) as nested:
+                entries.extend(extract_word_list_entries(nested))
+            continue
+
+        text = data.decode("utf-8", errors="ignore")
+        if name.endswith(".txt"):
+            entries.extend(parse_word_text(text))
+        elif name.endswith(".json"):
+            try:
+                parsed = json.loads(text)
+            except json.JSONDecodeError:
+                parsed = None
+            if isinstance(parsed, list):
+                for item in parsed:
                     if isinstance(item, str):
-                        words.extend(words_from_text(item))
-    return words
+                        entries.extend(parse_word_text(item))
+                    elif isinstance(item, dict):
+                        entries.extend(parse_word_text(" ".join(str(v) for v in item.values())))
+            elif isinstance(parsed, dict):
+                for key, value in parsed.items():
+                    entries.extend(parse_word_text(str(key)))
+                    if isinstance(value, str):
+                        entries.extend(parse_word_text(value))
+                    elif isinstance(value, list):
+                        for item in value:
+                            entries.extend(parse_word_text(str(item)))
+        elif name.endswith(".csv"):
+            sample = text[:4096]
+            try:
+                dialect = csv.Sniffer().sniff(sample)
+            except Exception:
+                dialect = csv.excel
+            reader = csv.DictReader(io.StringIO(text), dialect=dialect)
+            field_map = {field.lower(): field for field in reader.fieldnames or [] if field}
+            word_field = next((field_map[key] for key in ("word", "words", "lemma", "term", "entry", "vocabulary") if key in field_map), None)
+            if word_field:
+                for row in reader:
+                    entries.append(safe_text(row.get(word_field)))
+            else:
+                plain_reader = csv.reader(io.StringIO(text), dialect=dialect)
+                for row in plain_reader:
+                    if row:
+                        entries.append(safe_text(row[0]))
+    return entries
 
 
-def words_from_csv(text: str) -> list[str]:
-    words: list[str] = []
-    if not text.strip():
-        return words
-
-    sample = text[:4096]
-    try:
-        dialect = csv.Sniffer().sniff(sample)
-    except Exception:
-        dialect = csv.excel
-
-    reader = csv.DictReader(io.StringIO(text), dialect=dialect)
-    if reader.fieldnames:
-        normalized_fields = {field.strip().lower(): field for field in reader.fieldnames if field}
-        target_field = next((normalized_fields[name] for name in WORD_FIELD_NAMES if name in normalized_fields), None)
-        if target_field:
-            for row in reader:
-                cell = str(row.get(target_field, "")).strip()
-                if WORD_PATTERN.match(cell):
-                    words.append(cell)
-            return words
-
-    reader_plain = csv.reader(io.StringIO(text), dialect=dialect)
-    for row in reader_plain:
-        if row:
-            cell = str(row[0]).strip()
-            if WORD_PATTERN.match(cell):
-                words.append(cell)
-    return words
-
-
-def extract_archive_words(archive: ZipFile, collector: OrderedDict[str, None]) -> None:
-        for entry in archive.infolist():
-            if entry.is_dir():
-                continue
-            name = entry.filename.lower()
-            data = archive.read(entry)
-            if name.endswith(".zip"):
-                with ZipFile(io.BytesIO(data)) as nested_archive:
-                    extract_archive_words(nested_archive, collector)
-                continue
-            text = data.decode("utf-8", errors="ignore")
-            if name.endswith(".txt"):
-                add_words(collector, words_from_text(text))
-            elif name.endswith(".json"):
-                try:
-                    add_words(collector, words_from_json(text))
-                except Exception:
-                    pass
-            elif name.endswith(".csv"):
-                add_words(collector, words_from_csv(text))
-
-
-def extract_zip_words(zip_path: Path, collector: OrderedDict[str, None]) -> None:
+def parse_ecdict_csv(zip_path: Path, local_dictionary: dict[str, dict[str, str]], word_metadata: dict[str, dict[str, str]]) -> int:
+    count = 0
     with ZipFile(zip_path) as archive:
-        extract_archive_words(archive, collector)
+        csv_entry = next(
+            (entry for entry in archive.infolist() if entry.filename.lower().endswith("ecdict.csv") or entry.filename.lower().endswith("ecdict.mini.csv")),
+            None,
+        )
+        if csv_entry is None:
+            return 0
 
+        with archive.open(csv_entry) as raw:
+            reader = csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8", errors="ignore", newline=""))
+            for row in reader:
+                word = normalize_word(row.get("word", ""))
+                if not word or not WORD_PATTERN.match(word):
+                    continue
 
-def build_phrase_words() -> dict[str, str]:
-    phrase_file = VOCAB_DIR / "phrase_dict.txt"
-    phrases: dict[str, str] = {}
-    if phrase_file.exists():
-        for line in phrase_file.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            phrases[line.lower()] = line
-    return phrases
+                translation = safe_text(row.get("translation"))
+                definition = safe_text(row.get("definition"))
+                phonetic = safe_text(row.get("phonetic"))
+                meaning = translation if translation else (definition.splitlines()[0].strip()[:120] if definition else "")
+
+                entry = {
+                    "chinese_meaning": meaning,
+                    "phonetic": phonetic if phonetic else f"/{word}/",
+                    "mnemonic": f"词典补充：{word}",
+                }
+
+                existing = local_dictionary.get(word)
+                if existing is None or len(meaning) > len(existing.get("chinese_meaning", "")):
+                    local_dictionary[word] = entry
+                if word not in word_metadata:
+                    word_metadata[word] = entry
+                count += 1
+    return count
 
 
 def main() -> None:
     GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+
+    local_dictionary = load_json(VOCAB_DIR / "local_dictionary.json")
+    word_metadata = load_json(VOCAB_DIR / "word_metadata.json")
     collector: OrderedDict[str, None] = OrderedDict()
     source_stats: dict[str, int] = defaultdict(int)
 
     for zip_path in sorted(REFERENCE_DIR.glob("*.zip")):
-        before = len(collector)
-        extract_zip_words(zip_path, collector)
-        source_stats[zip_path.stem] = len(collector) - before
+        if zip_path.name == "ECDICT-master.zip":
+            source_stats[zip_path.stem] = parse_ecdict_csv(zip_path, local_dictionary, word_metadata)
+        else:
+            with ZipFile(zip_path) as archive:
+                entries = extract_word_list_entries(archive)
+            before = len(collector)
+            for word in entries:
+                add_word(collector, word)
+            source_stats[zip_path.stem] = len(collector) - before
 
     words = list(collector.keys())
     (GENERATED_DIR / "all_words.txt").write_text("\n".join(words), encoding="utf-8")
@@ -174,19 +209,16 @@ def main() -> None:
         else:
             categories["toefl"].add(word)
 
-    # Academic words are the intersection of the longer and more formal lists.
     categories["academic"].update(categories["ielts"])
     categories["academic"].update(categories["toefl"])
 
     for name, items in categories.items():
         (VOCAB_DIR / f"{name}.txt").write_text("\n".join(sorted(items)), encoding="utf-8")
 
-    (VOCAB_DIR / "phrase_meanings.json").write_text(
-        json.dumps(build_phrase_words(), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    save_json(VOCAB_DIR / "local_dictionary.json", local_dictionary)
+    save_json(VOCAB_DIR / "word_metadata.json", word_metadata)
 
-    print(f"Imported {len(words)} words from {len(list(REFERENCE_DIR.glob('*.zip')))} archives.")
+    print(f"Imported {len(words)} word-list items and merged {len(local_dictionary)} dictionary entries.")
 
 
 if __name__ == "__main__":
