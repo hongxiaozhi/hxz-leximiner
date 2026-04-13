@@ -46,6 +46,30 @@ function buildSentenceSnippet(sentence, needle, limit = 120) {
   return `${prefix}${normalizedSentence.slice(start, end).trim()}${suffix}`;
 }
 
+function renderSummary(summary) {
+  const totalWords = Number(summary?.total_words || 0);
+  const uniqueWords = Number(summary?.unique_words || 0);
+  const totalPhrases = Number(summary?.total_phrases || 0);
+  const totalSentences = Number(summary?.total_sentences || 0);
+  return `
+    <div class="summary-grid">
+      <article><span>总词数</span><strong>${totalWords}</strong></article>
+      <article><span>不同词数</span><strong>${uniqueWords}</strong></article>
+      <article><span>短语数</span><strong>${totalPhrases}</strong></article>
+      <article><span>句子数</span><strong>${totalSentences}</strong></article>
+    </div>
+  `;
+}
+
+function renderStatusMessage(message) {
+  return `
+    <div class="status-line">
+      <span class="status-dot"></span>
+      <strong>${escapeHtml(message || "等待分析")}</strong>
+    </div>
+  `;
+}
+
 function renderCards(container, rows, type) {
   if (!rows.length) {
     container.innerHTML = '<p class="empty">暂无结果</p>';
@@ -61,12 +85,16 @@ function renderCards(container, rows, type) {
             <h3>${escapeHtml(row.lemma || row.word || "")}</h3>
             <p class="meaning-inline">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
           </div>
-          <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
+          <div class="badge-stack">
+            <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
+            <span class="hint-badge ${row.remark === "simple_word" ? "hint-badge--active" : ""}">${row.remark === "simple_word" ? "简单词" : "常规"}</span>
+          </div>
         </header>
         <div class="result-grid word-grid">
           <div><span class="label">原形</span><strong>${escapeHtml(row.word || "")}</strong></div>
           <div><span class="label">音标</span><strong>${escapeHtml(row.phonetic || "-")}</strong></div>
           <div><span class="label">助记</span><strong>${escapeHtml(row.mnemonic || "-")}</strong></div>
+          <div><span class="label">状态</span><strong>${escapeHtml(row.remark === "simple_word" ? "基础词，已跳过联网补充" : "已完成分析")}</strong></div>
         </div>
         <p class="sentence">${escapeHtml(buildSentenceSnippet(row.source_sentence || "暂无例句", row.word || row.lemma || "", 120))}</p>
       </article>
@@ -82,7 +110,9 @@ function renderCards(container, rows, type) {
           <h3>${escapeHtml(row.phrase || "")}</h3>
           <p class="meaning-inline">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
         </div>
-        <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
+        <div class="badge-stack">
+          <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
+        </div>
       </header>
       <p class="sentence">${escapeHtml(buildSentenceSnippet(row.source_sentence || "暂无例句", row.phrase || "", 120))}</p>
     </article>
@@ -138,12 +168,12 @@ async function analyze() {
       throw new Error(data.message || "请求失败");
     }
 
-    statusBox.textContent = data.message;
-    summaryBox.textContent = JSON.stringify(data.summary, null, 2);
+    statusBox.innerHTML = renderStatusMessage(data.message);
+    summaryBox.innerHTML = renderSummary(data.summary);
     renderCards(wordsBox, data.words || [], "word");
     renderCards(phrasesBox, data.phrases || [], "phrase");
   } catch (error) {
-    statusBox.textContent = `分析失败：${error.message}`;
+    statusBox.innerHTML = renderStatusMessage(`分析失败：${error.message}`);
   }
 }
 
