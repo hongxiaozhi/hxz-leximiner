@@ -31,16 +31,12 @@ class WordMetadataService:
         "ly": "-ly 常构成副词，表示方式",
     }
 
-    def __init__(self, vocab_dir: Path, output_dir: Path) -> None:
+    def __init__(self, vocab_dir: Path) -> None:
         self.vocab_dir = vocab_dir
-        self.output_dir = output_dir
-        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.local_dictionary_path = self.vocab_dir / "local_dictionary.json"
         self.override_path = self.vocab_dir / "word_metadata.json"
-        self.cache_path = self.output_dir / "word_metadata_cache.json"
         self.local_dictionary = self._load_json(self.local_dictionary_path)
         self.overrides = self._load_json(self.override_path)
-        self.cache = self._load_json(self.cache_path)
         self.translator = None
 
     def enable_online_translation(self) -> None:
@@ -63,14 +59,11 @@ class WordMetadataService:
             return self._pack_metadata(normalized, self.local_dictionary[normalized])
         if normalized in self.overrides:
             return self._pack_metadata(normalized, self.overrides[normalized])
-        if normalized in self.cache:
-            return self._pack_metadata(normalized, self.cache[normalized], sync=False)
         metadata = {
             "chinese_meaning": self._translate_to_chinese(normalized, use_online_translation),
             "phonetic": self._build_phonetic(normalized),
             "mnemonic": self._build_mnemonic(normalized),
         }
-        self._sync_cache(normalized, metadata)
         return self._pack_metadata(normalized, metadata, sync=False)
 
     def _pack_metadata(self, word: str, data, sync: bool = True):
@@ -78,8 +71,6 @@ class WordMetadataService:
         metadata.chinese_meaning = data.get("chinese_meaning", "")
         metadata.phonetic = data.get("phonetic", "")
         metadata.mnemonic = data.get("mnemonic", "")
-        if sync:
-            self._sync_cache(word, data)
         return metadata
 
     def _translate_to_chinese(self, word: str, use_online_translation: bool = False) -> str:
@@ -110,10 +101,6 @@ class WordMetadataService:
             preview = "-".join(chunks[:3])
             return f"可按发音片段记忆：{preview}"
         return f"可结合词形 {word} 反复朗读记忆"
-
-    def _sync_cache(self, word: str, data) -> None:
-        self.cache[word] = data
-        self.cache_path.write_text(json.dumps(self.cache, ensure_ascii=False, indent=2), encoding="utf-8")
 
     @staticmethod
     def _load_json(file_path: Path):

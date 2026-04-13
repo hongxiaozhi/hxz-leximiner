@@ -14,12 +14,10 @@ class LexiMinerAnalyzer:
     def __init__(self, project_root: Path | None = None) -> None:
         self.project_root = project_root or Path(__file__).resolve().parents[1]
         self.vocab_dir = self.project_root / "data" / "vocab"
-        self.output_dir = self.project_root / "output"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.word_extractor = WordExtractor()
         self.classifier = VocabularyClassifier(vocab_dir=self.vocab_dir)
         self.phrase_extractor = PhraseExtractor(stopwords=self.word_extractor.stopwords)
-        self.word_metadata_service = WordMetadataService(vocab_dir=self.vocab_dir, output_dir=self.output_dir)
+        self.word_metadata_service = WordMetadataService(vocab_dir=self.vocab_dir)
 
     def analyze_text(self, text: str, use_online_translation: bool = False) -> AnalysisResult:
         cleaned_text = clean_text(text)
