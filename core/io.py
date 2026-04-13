@@ -25,13 +25,15 @@ def build_excel_bytes(word_df: pd.DataFrame, phrase_df: pd.DataFrame) -> bytes:
 
 
 def load_text_from_upload(uploaded_file) -> str:
-    suffix = Path(uploaded_file.name).suffix.lower()
+    original_name = getattr(uploaded_file, "filename", "") or getattr(uploaded_file, "name", "")
+    suffix = Path(original_name).suffix.lower()
+    mimetype = getattr(uploaded_file, "mimetype", "") or ""
     file_bytes = uploaded_file.getvalue()
 
-    if suffix == ".txt":
+    if suffix == ".txt" or mimetype.startswith("text/"):
         return file_bytes.decode("utf-8", errors="ignore")
 
-    if suffix == ".pdf":
+    if suffix == ".pdf" or mimetype == "application/pdf":
         return extract_text_from_pdf(file_bytes)
 
     raise ValueError("当前版本仅支持上传 .txt 和 .pdf 文件。")
