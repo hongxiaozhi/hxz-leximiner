@@ -1,1 +1,3 @@
-"""Core NLP modules for LexiMiner."""
+from .analyzer import LexiMinerAnalyzer
+
+__all__ = ["LexiMinerAnalyzer"]

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LexiMiner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">LexiMiner</p>
+      <h1>英语词汇与短语分析</h1>
+      <p class="lead">输入英文文本，快速得到词汇统计、短语提取和分类结果。当前页面已切换到新的前后端结构。</p>
+    </section>
+
+    <section class="panel">
+      <label for="text-input">英文文本</label>
+      <textarea id="text-input" rows="10">LexiMiner helps students analyze academic reading materials. The system extracts important words and common phrases from English texts.</textarea>
+
+      <div class="actions">
+        <label class="toggle">
+          <input type="checkbox" id="online-translation">
+          <span>联网补充中文释义</span>
+        </label>
+        <button id="analyze-btn">开始分析</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>状态</h2>
+        <pre id="status-box">等待分析</pre>
+      </article>
+      <article class="card">
+        <h2>摘要</h2>
+        <pre id="summary-box">-</pre>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>词汇结果</h2>
+      <div id="words-box" class="table-box"></div>
+    </section>
+
+    <section class="card">
+      <h2>短语结果</h2>
+      <div id="phrases-box" class="table-box"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

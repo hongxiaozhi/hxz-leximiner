@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Iterable, List, Sequence
 
 try:
-    from models.schemas import PhraseResult
+    from leximiner_core.schemas import PhraseResult
 except ModuleNotFoundError:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from models.schemas import PhraseResult
+    from leximiner_core.schemas import PhraseResult
 
 
 class PhraseExtractor:

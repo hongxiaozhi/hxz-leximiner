@@ -11,12 +11,12 @@ from nltk.corpus import stopwords
 try:
     from core.lemmatizer import Lemmatizer
     from core.nltk_resources import ensure_nltk_resources, has_nltk_resource
-    from models.schemas import WordResult
+    from leximiner_core.schemas import WordResult
 except ModuleNotFoundError:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from core.lemmatizer import Lemmatizer
     from core.nltk_resources import ensure_nltk_resources, has_nltk_resource
-    from models.schemas import WordResult
+    from leximiner_core.schemas import WordResult
 
 
 TOKEN_PATTERN = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)?")

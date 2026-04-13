@@ -1,19 +1,15 @@
 # LexiMiner
 
-LexiMiner 是一个面向英语词汇与短语分析的 Python MVP 项目。它可以对英文文本进行清洗、分词、词形还原、词频统计、短语提取，并基于本地词表完成词汇分类，最后在 Streamlit 页面中展示结果，并支持导出 CSV 与 Excel。
+LexiMiner 是一个面向英语词汇与短语分析的 Python 项目。它可以对英文文本进行清洗、分词、词形还原、词频统计、短语提取，并基于本地词表完成词汇分类。当前实现已经固定为“后端 API + 前端页面 + 单一 `core/` 核心层”的标准结构。
 
 ## 1. 项目整体设计说明
 
-项目按“界面层 -> 服务层 -> 核心算法层 -> 数据模型层 -> 工具层”组织：
+项目按“界面层 -> 核心层”组织：
 
-- `streamlit_app.py`：Streamlit 应用入口，负责接收文本/文件输入、触发分析、展示结果、导出文件。
-- `services/analysis_service.py`：业务编排层，负责把预处理、单词提取、分类、短语提取串联起来。
-- `core/`：核心 NLP 逻辑，包括文本清洗、词形还原、单词提取、短语提取、词汇分类。
-- `models/`：结构化数据模型，统一词汇结果、短语结果和分析摘要的数据格式。
-- `utils/export_utils.py`：导出 CSV/Excel 的辅助函数。
-- `utils/file_utils.py`：上传文件读取工具，负责 `.txt` 与 `.pdf` 文本抽取。
+- `backend/app.py`：Flask API 入口，负责接收文本并返回分析结果。
+- `frontend/`：页面展示层，负责输入、调用 API、展示结果。
+- `core/`：唯一核心层，统一管理分析结果 schema、分析 facade、I/O 能力与算法实现。
 - `data/vocab/`：本地词表目录，包含分类词表和本地词典数据。
-- `tests/`：基础测试，验证主分析流程可运行。
 
 当前实现遵循 MVP 思路：
 
@@ -44,22 +40,18 @@ hxz-leximiner/
 │     ├─ cet4.txt
 │     ├─ cet6.txt
 │     └─ phrase_dict.txt
-├─ models/
-│  ├─ __init__.py
-│  └─ schemas.py
-├─ output/
-│  └─ .gitkeep
-├─ services/
-│  ├─ __init__.py
-│  └─ analysis_service.py
-├─ tests/
-│  └─ test_analysis_service.py
-├─ utils/
-│  ├─ __init__.py
-│  └─ export_utils.py
+├─ backend/
+│  └─ app.py
+├─ deploy/
+│  └─ site-template/
+│     └─ Dockerfile
+├─ frontend/
+│  ├─ app.js
+│  ├─ index.html
+│  └─ style.css
+├─ REFACTOR_PLAN.md
 ├─ README.md
-├─ requirements.txt
-└─ streamlit_app.py
+└─ requirements.txt
 ```
 
 ## 3. 核心功能说明
@@ -93,7 +85,7 @@ hxz-leximiner/
 
 ### 结果导出
 
-- `utils/export_utils.py` 支持：
+- `core/io.py` 支持：
   - 导出 ZIP 压缩包，包含 `words.csv` 与 `phrases.csv`
   - 导出 Excel，多工作表分别保存词汇和短语结果
 
@@ -138,13 +130,17 @@ pip install -r requirements.txt
 
 ## 5. 运行方式
 
-### 启动 Streamlit
+### 启动后端
 
 ```bash
-streamlit run streamlit_app.py
+python backend/app.py
 ```
 
-启动后在浏览器打开本地地址即可使用。
+后端默认运行在 `http://127.0.0.1:5000`。
+
+### 打开前端
+
+直接打开 `frontend/index.html`，或通过静态服务器访问前端页面。
 
 ### 运行测试
 
@@ -192,9 +188,9 @@ pytest
 
 这个项目刻意保持了模块化和轻量实现：
 
-- 核心逻辑集中在 `core/`
-- 页面逻辑集中在 `streamlit_app.py`
-- 数据结构集中在 `models/`
-- 业务流程集中在 `services/`
+- 核心能力和算法实现都集中在 `core/`
+- 页面逻辑集中在 `frontend/`
+- 数据结构由 `core/schemas.py` 统一管理
+- 业务流程集中在 `core/analysis.py`
 
-如果你后续要增强功能，建议优先从 `services/analysis_service.py` 和 `core/classifier.py` 入手。
+如果你后续要增强功能，建议优先从 `core/analysis.py` 和 `core/classifier.py` 入手。
