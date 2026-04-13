@@ -1,4 +1,6 @@
-const API_BASE = "";
+const API_BASE = window.location.protocol === "file:"
+  ? "http://127.0.0.1:5000"
+  : window.location.origin;
 
 function renderTable(container, rows, columns) {
   if (!rows.length) {
@@ -47,7 +49,18 @@ async function analyze() {
         : JSON.stringify({ text, use_online_translation: useOnlineTranslation }),
     });
 
-    const data = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const responseText = await response.text();
+    let data;
+    if (contentType.includes("application/json")) {
+      data = JSON.parse(responseText);
+    } else {
+      data = {
+        status: "error",
+        message: responseText.slice(0, 200) || `请求失败：HTTP ${response.status}`,
+      };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || "请求失败");
     }
