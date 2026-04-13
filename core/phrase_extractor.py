@@ -12,7 +12,13 @@ class PhraseExtractor:
     def __init__(self, stopwords: Iterable[str]) -> None:
         self.stopwords = {word.lower() for word in stopwords}
 
-    def extract_phrases(self, tokens: Sequence[str], min_frequency: int = 1) -> List[PhraseResult]:
+    def extract_phrases(
+        self,
+        tokens: Sequence[str],
+        sentences: Sequence[str] | None = None,
+        min_frequency: int = 1,
+        phrase_meanings: dict[str, str] | None = None,
+    ) -> List[PhraseResult]:
         normalized = [token.lower() for token in tokens if token.isalpha() and len(token) > 1]
         candidates = self._generate_ngrams(normalized, 2) + self._generate_ngrams(normalized, 3)
         counter = Counter(candidates)
@@ -23,7 +29,15 @@ class PhraseExtractor:
                 continue
             if self._is_invalid_phrase(phrase):
                 continue
-            phrase_results.append(PhraseResult(phrase=phrase, frequency=frequency, category="ngram"))
+            phrase_results.append(
+                PhraseResult(
+                    phrase=phrase,
+                    frequency=frequency,
+                    category="ngram",
+                    chinese_meaning=self._build_phrase_meaning(phrase, phrase_meanings or {}),
+                    source_sentence=self._find_sentence(phrase, sentences or []),
+                )
+            )
 
         phrase_results.sort(key=lambda item: (-item.frequency, item.phrase))
         return phrase_results
@@ -40,3 +54,12 @@ class PhraseExtractor:
         if any(not part.isalpha() for part in parts):
             return True
         return False
+
+    def _build_phrase_meaning(self, phrase: str, phrase_meanings: dict[str, str]) -> str:
+        return phrase_meanings.get(phrase, f"常用短语：{phrase}")
+
+    def _find_sentence(self, phrase: str, sentences: Sequence[str]) -> str:
+        for sentence in sentences:
+            if phrase in sentence.lower():
+                return sentence
+        return ""

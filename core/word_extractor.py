@@ -74,6 +74,8 @@ class WordExtractor:
                 lemma=str(item["lemma"]),
                 frequency=int(item["frequency"]),
                 category="unknown",
+                level="unknown",
+                frequency_band="unknown",
                 chinese_meaning="",
                 phonetic="",
                 mnemonic="",

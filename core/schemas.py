@@ -10,6 +10,8 @@ class WordResult:
     lemma: str
     frequency: int
     category: str
+    level: str = "unknown"
+    frequency_band: str = "unknown"
     chinese_meaning: str = ""
     phonetic: str = ""
     mnemonic: str = ""
@@ -25,6 +27,8 @@ class PhraseResult:
     phrase: str
     frequency: int
     category: str
+    chinese_meaning: str = ""
+    source_sentence: str = ""
 
     def to_dict(self) -> Dict[str, str | int]:
         return asdict(self)

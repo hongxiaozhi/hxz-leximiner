@@ -1,6 +1,6 @@
 # LexiMiner
 
-LexiMiner 是一个面向英语词汇与短语分析的 Python 项目。它可以对英文文本进行清洗、分词、词形还原、词频统计、短语提取，并基于本地词表完成词汇分类。当前实现已经固定为“后端 API + 前端页面 + 单一 `core/` 核心层”的标准结构。
+LexiMiner 是一个面向英语词汇与短语分析的 Python 项目。它可以对英文文本进行清洗、分词、词形还原、词频统计、短语提取，并基于本地词表完成词汇分类。当前实现已经固定为“后端 API + 前端页面 + 单一 `core/` 核心层”的标准结构，并且已经支持直接上传 `.txt`、`.pdf` 文件进行分析。
 
 
 ## 1. 项目整体设计说明
@@ -18,7 +18,8 @@ LexiMiner 是一个面向英语词汇与短语分析的 Python 项目。它可�
 - 支持上传 `.txt` 与 `.pdf` 文件
 - 提取单词并词形还原
 - 统计词频
-- 按本地词表分类：`academic > cet6 > cet4 > unknown`
+- 按本地词表与启发式规则分级：`academic / ielts / cet6 / cet4 / high_school / unknown`
+- 标注高低频：`high_frequency / mid_frequency / low_frequency`
 - 提取基础 bigram / trigram 短语
 - 展示表格结果
 - 导出 CSV 与 Excel
@@ -40,7 +41,10 @@ hxz-leximiner/
 │     ├─ academic.txt
 │     ├─ cet4.txt
 │     ├─ cet6.txt
-│     └─ phrase_dict.txt
+│     ├─ high_school.txt
+│     ├─ ielts.txt
+│     ├─ phrase_dict.txt
+│     └─ phrase_meanings.json
 ├─ backend/
 │  └─ app.py
 ├─ deploy/
@@ -75,13 +79,14 @@ hxz-leximiner/
 ### 分类逻辑
 
 - `core/classifier.py` 从 `data/vocab/` 加载本地词表。
-- 词汇分类优先级：`academic > cet6 > cet4 > unknown`。
+- 词汇分类优先级：`academic > ielts > cet6 > cet4 > high_school > unknown`。
 - 短语若命中 `phrase_dict.txt`，标记为 `phrase_dict`，否则为 `ngram`。
 
 ### 本地词典
 
 - `data/vocab/local_dictionary.json`：项目内置本地词典，优先提供中文意思、音标、助记词。
 - `data/vocab/word_metadata.json`：你可以继续手动补充或覆盖默认词典内容。
+- `data/vocab/phrase_meanings.json`：项目内置短语释义表，优先提供常用短语含义。
 - 查询优先级：`local_dictionary.json` -> `word_metadata.json` -> 缓存 -> 离线回退。
 
 ### 结果导出
@@ -162,7 +167,9 @@ pytest
 - `word`：原始词形（该 lemma 首次出现时的词形）
 - `lemma`：词形还原结果
 - `frequency`：词频
-- `category`：分类结果
+- `category`：词汇等级分类结果
+- `level`：与 `category` 一致的等级字段，方便前端展示
+- `frequency_band`：高低频判断结果
 - `chinese_meaning`：中文意思，优先来自本地词典，缺失时自动回退补充
 - `phonetic`：音标，优先使用本地元数据和自动音标转换
 - `mnemonic`：助记词或词形记忆提示
@@ -174,6 +181,8 @@ pytest
 - `phrase`：短语内容
 - `frequency`：出现频次
 - `category`：`phrase_dict` 或 `ngram`
+- `chinese_meaning`：短语释义，当前以简洁说明和词典命中结果展示
+- `source_sentence`：短语所在例句
 
 ## 7. 后续扩展建议
 

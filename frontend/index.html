@@ -18,6 +18,11 @@
       <label for="text-input">英文文本</label>
       <textarea id="text-input" rows="10">LexiMiner helps students analyze academic reading materials. The system extracts important words and common phrases from English texts.</textarea>
 
+      <label class="file-input">
+        <span>上传文件（.txt / .pdf）</span>
+        <input type="file" id="file-input" accept=".txt,.pdf">
+      </label>
+
       <div class="actions">
         <label class="toggle">
           <input type="checkbox" id="online-translation">
@@ -46,6 +51,11 @@
     <section class="card">
       <h2>短语结果</h2>
       <div id="phrases-box" class="table-box"></div>
+    </section>
+
+    <section class="card">
+      <h2>导入说明</h2>
+      <p>支持直接粘贴英文文本，也支持上传 TXT 或 PDF 文件。上传文件后会优先读取文件内容。</p>
     </section>
   </main>
 
