@@ -29,7 +29,13 @@ class LexiMinerAnalyzer:
             item.category = self.classifier.classify_word(item.lemma)
             item.level = item.category
             item.frequency_band = self.classifier.estimate_frequency_band(item.lemma, item.frequency)
-        self.word_metadata_service.enrich_words(word_results, use_online_translation=use_online_translation)
+            if self.classifier.is_simple_word(item.lemma):
+                item.remark = "simple_word"
+        self.word_metadata_service.enrich_words(
+            word_results,
+            use_online_translation=use_online_translation,
+            skip_simple_words=True,
+        )
         tokens_for_phrases = self.word_extractor.filter_tokens(self.word_extractor.tokenize(cleaned_text), remove_stopwords=True)
         phrase_results = self.phrase_extractor.extract_phrases(
             tokens=tokens_for_phrases,

@@ -31,6 +31,12 @@ class VocabularyClassifier:
                 return category
         return self._heuristic_level(normalized)
 
+    def is_simple_word(self, lemma: str) -> bool:
+        normalized = lemma.lower().strip()
+        if normalized in self.vocab_map["high_school"]:
+            return True
+        return len(normalized) <= 4
+
     def estimate_frequency_band(self, lemma: str, frequency: int) -> str:
         if frequency >= 5:
             return "high_frequency"

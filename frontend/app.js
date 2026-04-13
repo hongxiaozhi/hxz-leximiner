@@ -2,50 +2,91 @@ const API_BASE = window.location.protocol === "file:"
   ? "http://127.0.0.1:5000"
   : window.location.origin;
 
-async function loadVocabPreview() {
-  const grid = document.getElementById("vocab-stats-grid");
-  const note = document.getElementById("vocab-stats-note");
-  if (!grid || !note) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/api/leximiner/vocab-preview`);
-    const data = await response.json();
-    const stats = data.stats || {};
-    const cards = [
-      ["高频/基础", stats.high_school || 0],
-      ["四级", stats.cet4 || 0],
-      ["六级", stats.cet6 || 0],
-      ["雅思", stats.ielts || 0],
-      ["托福", stats.toefl || 0],
-      ["学术词表", stats.academic || 0],
-    ];
-    grid.innerHTML = cards.map(([label, value]) => `
-      <article class="stat-card">
-        <span>${label}</span>
-        <strong>${value}</strong>
-      </article>
-    `).join("");
-    note.textContent = `短语词表 ${data.phrase_count || 0} 条，短语释义 ${data.phrase_meaning_count || 0} 条。`;
-  } catch (error) {
-    grid.innerHTML = "";
-    note.textContent = `词库概览加载失败：${error.message}`;
-  }
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
-function renderTable(container, rows, columns) {
+function trimText(value, limit = 120) {
+  const text = String(value ?? "").trim();
+  if (!text) {
+    return "";
+  }
+  return text.length > limit ? `${text.slice(0, limit)}...` : text;
+}
+
+function buildSentenceSnippet(sentence, needle, limit = 120) {
+  const text = String(sentence ?? "").trim();
+  if (!text) {
+    return "暂无例句";
+  }
+
+  const normalizedSentence = text.replace(/\s+/g, " ");
+  const normalizedNeedle = String(needle ?? "").trim();
+  if (!normalizedNeedle) {
+    return trimText(normalizedSentence, limit);
+  }
+
+  const lowerSentence = normalizedSentence.toLowerCase();
+  const lowerNeedle = normalizedNeedle.toLowerCase();
+  const index = lowerSentence.indexOf(lowerNeedle);
+  if (index < 0) {
+    return trimText(normalizedSentence, limit);
+  }
+
+  const half = Math.max(20, Math.floor(limit / 2));
+  const start = Math.max(0, index - half);
+  const end = Math.min(normalizedSentence.length, index + normalizedNeedle.length + half);
+  const prefix = start > 0 ? "..." : "";
+  const suffix = end < normalizedSentence.length ? "..." : "";
+  return `${prefix}${normalizedSentence.slice(start, end).trim()}${suffix}`;
+}
+
+function renderCards(container, rows, type) {
   if (!rows.length) {
     container.innerHTML = '<p class="empty">暂无结果</p>';
     return;
   }
 
-  const header = `<tr>${columns.map((column) => `<th>${column.label}</th>`).join("")}</tr>`;
-  const body = rows
-    .map((row) => `<tr>${columns.map((column) => `<td>${row[column.key] ?? ""}</td>`).join("")}</tr>`)
-    .join("");
+  if (type === "word") {
+    container.innerHTML = rows.map((row) => `
+      <article class="result-card word-card">
+        <header class="result-card__header result-card__header--stack">
+          <div class="title-block">
+            <p class="result-meta">${escapeHtml(row.category || "unknown")} · ${escapeHtml(row.frequency_band || "unknown")}</p>
+            <h3>${escapeHtml(row.lemma || row.word || "")}</h3>
+            <p class="meaning-inline">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
+          </div>
+          <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
+        </header>
+        <div class="result-grid word-grid">
+          <div><span class="label">原形</span><strong>${escapeHtml(row.word || "")}</strong></div>
+          <div><span class="label">音标</span><strong>${escapeHtml(row.phonetic || "-")}</strong></div>
+          <div><span class="label">助记</span><strong>${escapeHtml(row.mnemonic || "-")}</strong></div>
+        </div>
+        <p class="sentence">${escapeHtml(buildSentenceSnippet(row.source_sentence || "暂无例句", row.word || row.lemma || "", 120))}</p>
+      </article>
+    `).join("");
+    return;
+  }
 
-  container.innerHTML = `<table><thead>${header}</thead><tbody>${body}</tbody></table>`;
+  container.innerHTML = rows.map((row) => `
+    <article class="result-card phrase-card">
+      <header class="result-card__header result-card__header--stack">
+        <div class="title-block">
+          <p class="result-meta">${escapeHtml(row.category || "ngram")}</p>
+          <h3>${escapeHtml(row.phrase || "")}</h3>
+          <p class="meaning-inline">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
+        </div>
+        <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
+      </header>
+      <p class="sentence">${escapeHtml(buildSentenceSnippet(row.source_sentence || "暂无例句", row.phrase || "", 120))}</p>
+    </article>
+  `).join("");
 }
 
 async function analyze() {
@@ -99,30 +140,11 @@ async function analyze() {
 
     statusBox.textContent = data.message;
     summaryBox.textContent = JSON.stringify(data.summary, null, 2);
-    renderTable(wordsBox, data.words || [], [
-      { key: "word", label: "原形" },
-      { key: "lemma", label: "Lemma" },
-      { key: "frequency", label: "频次" },
-      { key: "category", label: "分类" },
-      { key: "frequency_band", label: "高低频" },
-      { key: "chinese_meaning", label: "中文释义" },
-      { key: "phonetic", label: "音标" },
-      { key: "mnemonic", label: "助记" },
-      { key: "source_sentence", label: "例句" },
-    ]);
-    renderTable(phrasesBox, data.phrases || [], [
-      { key: "phrase", label: "短语" },
-      { key: "frequency", label: "频次" },
-      { key: "category", label: "分类" },
-      { key: "chinese_meaning", label: "短语释义" },
-      { key: "source_sentence", label: "例句" },
-    ]);
+    renderCards(wordsBox, data.words || [], "word");
+    renderCards(phrasesBox, data.phrases || [], "phrase");
   } catch (error) {
     statusBox.textContent = `分析失败：${error.message}`;
   }
 }
 
 document.getElementById("analyze-btn").addEventListener("click", analyze);
-document.getElementById("refresh-vocab-btn").addEventListener("click", loadVocabPreview);
-
-loadVocabPreview();

@@ -49,17 +49,21 @@ class WordMetadataService:
         if self.translator is None and GoogleTranslator is not None:
             self.translator = GoogleTranslator(source="en", target="zh-CN")
 
-    def enrich_words(self, words, use_online_translation: bool = False) -> None:
+    def enrich_words(self, words, use_online_translation: bool = False, skip_simple_words: bool = False) -> None:
         if use_online_translation:
             self.enable_online_translation()
 
         for item in words:
-            metadata = self.get_metadata(item.lemma, use_online_translation=use_online_translation)
+            metadata = self.get_metadata(
+                item.lemma,
+                use_online_translation=use_online_translation,
+                skip_simple_words=skip_simple_words,
+            )
             item.chinese_meaning = metadata.chinese_meaning
             item.phonetic = metadata.phonetic
             item.mnemonic = metadata.mnemonic
 
-    def get_metadata(self, lemma: str, use_online_translation: bool = False):
+    def get_metadata(self, lemma: str, use_online_translation: bool = False, skip_simple_words: bool = False):
         # Prefer local dictionaries first; only fall back to generated hints
         # when the project vocabulary does not already know this lemma.
         normalized = lemma.lower().strip()
@@ -67,6 +71,13 @@ class WordMetadataService:
             return self._pack_metadata(normalized, self.local_dictionary[normalized])
         if normalized in self.overrides:
             return self._pack_metadata(normalized, self.overrides[normalized])
+        if skip_simple_words:
+            metadata = {
+                "chinese_meaning": normalized,
+                "phonetic": self._build_phonetic(normalized),
+                "mnemonic": self._build_mnemonic(normalized),
+            }
+            return self._pack_metadata(normalized, metadata, sync=False)
         metadata = {
             "chinese_meaning": self._translate_to_chinese(normalized, use_online_translation),
             "phonetic": self._build_phonetic(normalized),
