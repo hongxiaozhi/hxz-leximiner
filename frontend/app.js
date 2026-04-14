@@ -72,9 +72,9 @@ function renderCards(container, rows, type) {
       <article class="result-card word-card">
         <header class="result-card__header result-card__header--stack">
           <div class="title-block">
+            <h3 class="main-word">${escapeHtml(row.lemma || row.word || "")}</h3>
+            <p class="meaning-main">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
             <p class="result-meta">${escapeHtml(row.category || "unknown")} · ${escapeHtml(row.frequency_band || "unknown")}</p>
-            <h3>${escapeHtml(row.lemma || row.word || "")}</h3>
-            <p class="meaning-inline">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
           </div>
           <div class="badge-stack">
             <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
@@ -97,9 +97,9 @@ function renderCards(container, rows, type) {
     <article class="result-card phrase-card">
       <header class="result-card__header result-card__header--stack">
         <div class="title-block">
+          <h3 class="main-word">${escapeHtml(row.phrase || "")}</h3>
+          <p class="meaning-main">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
           <p class="result-meta">${escapeHtml(row.category || "ngram")}</p>
-          <h3>${escapeHtml(row.phrase || "")}</h3>
-          <p class="meaning-inline">${escapeHtml(row.chinese_meaning || "暂无释义")}</p>
         </div>
         <div class="badge-stack">
           <span class="badge">${escapeHtml(row.frequency ?? "")}</span>
@@ -118,11 +118,16 @@ async function analyze() {
   const summaryBox = document.getElementById("summary-box");
   const wordsBox = document.getElementById("words-box");
   const phrasesBox = document.getElementById("phrases-box");
+  const analyzeBtn = document.getElementById("analyze-btn");
 
   if (!text && !uploadedFile) {
     summaryBox.innerHTML = '<p class="empty">请输入英文文本或上传文件</p>';
     return;
   }
+
+  // 防止重复点击
+  analyzeBtn.disabled = true;
+  analyzeBtn.textContent = "正在分析...";
 
   try {
     const isFileUpload = Boolean(uploadedFile);
@@ -161,6 +166,9 @@ async function analyze() {
     renderCards(phrasesBox, data.phrases || [], "phrase");
   } catch (error) {
     summaryBox.innerHTML = `<p class="empty">分析失败：${escapeHtml(error.message)}</p>`;
+  } finally {
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = "开始分析";
   }
 }
 

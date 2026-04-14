@@ -18,6 +18,7 @@ class PhraseExtractor:
         sentences: Sequence[str] | None = None,
         min_frequency: int = 1,
         phrase_meanings: dict[str, str] | None = None,
+        word_meanings: dict[str, str] | None = None,
     ) -> List[PhraseResult]:
         normalized = [token.lower() for token in tokens if token.isalpha() and len(token) > 1]
         candidates = self._generate_ngrams(normalized, 2) + self._generate_ngrams(normalized, 3)
@@ -34,7 +35,7 @@ class PhraseExtractor:
                     phrase=phrase,
                     frequency=frequency,
                     category="ngram",
-                    chinese_meaning=self._build_phrase_meaning(phrase, phrase_meanings or {}),
+                    chinese_meaning=self._build_phrase_meaning(phrase, phrase_meanings or {}, word_meanings or {}),
                     source_sentence=self._find_sentence(phrase, sentences or []),
                 )
             )
@@ -55,8 +56,28 @@ class PhraseExtractor:
             return True
         return False
 
-    def _build_phrase_meaning(self, phrase: str, phrase_meanings: dict[str, str]) -> str:
-        return phrase_meanings.get(phrase, f"常用短语：{phrase}")
+    def _build_phrase_meaning(
+        self,
+        phrase: str,
+        phrase_meanings: dict[str, str],
+        word_meanings: dict[str, str],
+    ) -> str:
+        exact_meaning = phrase_meanings.get(phrase)
+        if exact_meaning:
+            return exact_meaning
+
+        parts = [part for part in phrase.split() if part]
+        if not parts:
+            return "短语释义"
+
+        composed_parts: list[str] = []
+        for part in parts:
+            if part in word_meanings:
+                composed_parts.append(word_meanings[part])
+        if composed_parts:
+            return " + ".join(composed_parts)
+
+        return f"短语释义：{'，'.join(parts)}"
 
     def _find_sentence(self, phrase: str, sentences: Sequence[str]) -> str:
         for sentence in sentences:

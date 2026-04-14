@@ -41,6 +41,7 @@ class LexiMinerAnalyzer:
             tokens=tokens_for_phrases,
             sentences=sentences,
             phrase_meanings=self.classifier.phrase_meanings,
+            word_meanings=self.classifier.word_meanings,
         )
         for item in phrase_results:
             item.category = self.classifier.classify_phrase(item.phrase)

@@ -21,6 +21,7 @@ class VocabularyClassifier:
     def __init__(self, vocab_dir: Path) -> None:
         self.vocab_dir = vocab_dir
         self.vocab_map = self._load_vocabularies()
+        self.word_meanings = self._load_word_meanings(vocab_dir / "local_dictionary.json", vocab_dir / "word_metadata.json")
         self.phrase_dict = self._load_word_list(vocab_dir / "phrase_dict.txt")
         self.phrase_meanings = self._load_phrase_meanings(vocab_dir / "phrase_meanings.json")
 
@@ -55,7 +56,7 @@ class VocabularyClassifier:
 
     def get_phrase_meaning(self, phrase: str) -> str:
         normalized = phrase.lower().strip()
-        return self.phrase_meanings.get(normalized, f"常用短语：{phrase}")
+        return self.phrase_meanings.get(normalized, f"短语释义：{phrase}")
 
     def _load_vocabularies(self) -> Dict[str, Set[str]]:
         return {
@@ -96,3 +97,22 @@ class VocabularyClassifier:
         except json.JSONDecodeError:
             return {}
         return {str(key).lower().strip(): str(value) for key, value in data.items() if str(key).strip()}
+
+    def _load_word_meanings(self, local_dictionary_path: Path, word_metadata_path: Path) -> Dict[str, str]:
+        meanings: Dict[str, str] = {}
+        for path in (local_dictionary_path, word_metadata_path):
+            if not path.exists():
+                continue
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(data, dict):
+                continue
+            for key, value in data.items():
+                if not str(key).strip() or not isinstance(value, dict):
+                    continue
+                meaning = str(value.get("chinese_meaning", "")).strip()
+                if meaning:
+                    meanings[str(key).lower().strip()] = meaning
+        return meanings
